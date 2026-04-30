@@ -4,6 +4,9 @@
   "description": "Multi-account Gmail MCP server",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "gmail-connector": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
