@@ -119,3 +119,14 @@ export async function removeAccount(alias: string): Promise<boolean> {
   await saveAll(state);
   return true;
 }
+
+export async function renameAccount(oldAlias: string, newAlias: string): Promise<boolean> {
+  const state = await loadAll();
+  const acc = state.accounts[oldAlias];
+  if (!acc) return false;
+  if (state.accounts[newAlias]) throw new Error(`alias '${newAlias}' already exists`);
+  state.accounts[newAlias] = { ...acc, alias: newAlias };
+  delete state.accounts[oldAlias];
+  await saveAll(state);
+  return true;
+}

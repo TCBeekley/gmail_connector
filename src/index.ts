@@ -8,6 +8,7 @@ Usage:
   gmail-connector                          run the MCP server (stdio)
   gmail-connector auth <alias>             add or re-auth an account
   gmail-connector accounts [list]          list connected accounts
+  gmail-connector accounts rename <a> <b>  rename an alias
   gmail-connector accounts remove <alias>  remove an account
 
 Env:
@@ -31,7 +32,7 @@ async function main(): Promise<void> {
     return;
   }
   if (cmd === "accounts") {
-    await accountsCommand(rest[0], rest[1]);
+    await accountsCommand(rest);
     return;
   }
   console.error(`unknown command: ${cmd}\n`);

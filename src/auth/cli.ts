@@ -8,6 +8,7 @@ import {
   listAccounts,
   putAccount,
   removeAccount,
+  renameAccount,
   type Account,
 } from "./token-store.js";
 import { resolveMode, scopesFor, type Mode } from "../config.js";
@@ -104,30 +105,44 @@ export async function authCommand(alias: string | undefined): Promise<void> {
   console.error(`Saved ${alias} (${info.email}) — mode=${mode}`);
 }
 
-export async function accountsCommand(sub: string | undefined, arg: string | undefined): Promise<void> {
+export async function accountsCommand(args: string[]): Promise<void> {
+  const [sub, a, b] = args;
   if (!sub || sub === "list") {
     const accounts = await listAccounts();
     if (accounts.length === 0) {
       console.error("No accounts. Run: gmail-connector auth <alias>");
       return;
     }
-    for (const a of accounts) {
-      console.log(`${a.alias}\t${a.email}\t${a.mode}\t${a.addedAt}`);
+    for (const acc of accounts) {
+      console.log(`${acc.alias}\t${acc.email}\t${acc.mode}\t${acc.addedAt}`);
     }
     return;
   }
   if (sub === "remove" || sub === "rm") {
-    if (!arg) {
+    if (!a) {
       console.error("usage: gmail-connector accounts remove <alias>");
       process.exit(2);
     }
-    const found = await getAccount(arg);
+    const found = await getAccount(a);
     if (!found) {
-      console.error(`no account: ${arg}`);
+      console.error(`no account: ${a}`);
       process.exit(1);
     }
     await removeAccount(found.alias);
     console.error(`removed ${found.alias} (${found.email})`);
+    return;
+  }
+  if (sub === "rename" || sub === "mv") {
+    if (!a || !b) {
+      console.error("usage: gmail-connector accounts rename <old> <new>");
+      process.exit(2);
+    }
+    const ok = await renameAccount(a, b);
+    if (!ok) {
+      console.error(`no account: ${a}`);
+      process.exit(1);
+    }
+    console.error(`renamed ${a} -> ${b}`);
     return;
   }
   console.error(`unknown subcommand: ${sub}`);
