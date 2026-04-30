@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+.idea/
+.vscode/
+
+tokens/
+accounts.json
+credentials.json
+gcp-oauth.keys.json
+*.tokens.json
