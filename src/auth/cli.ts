@@ -1,5 +1,4 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { spawn } from "node:child_process";
 import { AddressInfo } from "node:net";
 import { google } from "googleapis";
 import { makeOAuthClient } from "./oauth.js";
@@ -12,13 +11,7 @@ import {
   type Account,
 } from "./token-store.js";
 import { resolveMode, scopesFor, type Mode } from "../config.js";
-
-function openBrowser(url: string): void {
-  const cmd = process.platform === "darwin" ? "open"
-    : process.platform === "win32" ? "start"
-    : "xdg-open";
-  spawn(cmd, [url], { stdio: "ignore", detached: true }).unref();
-}
+import { openBrowser } from "../utils/open.js";
 
 async function pickFreePort(): Promise<{ port: number; close: () => void; server: ReturnType<typeof createServer> }> {
   return new Promise((resolve, reject) => {

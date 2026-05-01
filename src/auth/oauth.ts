@@ -14,12 +14,24 @@ let cached: DesktopKeys["installed"] | null = null;
 
 export async function loadOAuthKeys(): Promise<DesktopKeys["installed"]> {
   if (cached) return cached;
-  const raw = await readFile(OAUTH_KEYS_PATH, "utf8");
+  let raw: string;
+  try {
+    raw = await readFile(OAUTH_KEYS_PATH, "utf8");
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(
+        `No OAuth keys at ${OAUTH_KEYS_PATH}.\n` +
+          `Run \`gmail-connector init\` to set up Google OAuth, or set GOOGLE_OAUTH_KEYS_PATH.`,
+      );
+    }
+    throw e;
+  }
   const parsed = JSON.parse(raw) as Partial<DesktopKeys>;
   if (!parsed.installed?.client_id || !parsed.installed.client_secret) {
     throw new Error(
       `${OAUTH_KEYS_PATH} is not a Desktop-app OAuth client JSON ` +
-        `(missing 'installed.client_id' / 'client_secret')`,
+        `(missing 'installed.client_id' / 'client_secret'). ` +
+        `Re-create credentials with Application type "Desktop app".`,
     );
   }
   cached = parsed.installed;

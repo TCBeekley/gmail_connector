@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import { authCommand, accountsCommand } from "./auth/cli.js";
+import { initCommand } from "./setup/init.js";
 import { runServer } from "./server.js";
 
 const HELP = `gmail-connector — multi-account Gmail MCP server
 
 Usage:
   gmail-connector                          run the MCP server (stdio)
+  gmail-connector init                     guided Google OAuth setup
   gmail-connector auth <alias>             add or re-auth an account
   gmail-connector accounts [list]          list connected accounts
   gmail-connector accounts rename <a> <b>  rename an alias
@@ -25,6 +27,10 @@ async function main(): Promise<void> {
   }
   if (cmd === "-h" || cmd === "--help" || cmd === "help") {
     process.stdout.write(HELP);
+    return;
+  }
+  if (cmd === "init") {
+    await initCommand();
     return;
   }
   if (cmd === "auth") {
