@@ -12,7 +12,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "prepare": "npx tsc"
+    "prepare": "node node_modules/typescript/bin/tsc"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
