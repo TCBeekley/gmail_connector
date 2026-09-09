@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getGmailFor, resolveTargets } from "../gmail/client.js";
 import { parseMessage } from "../gmail/messages.js";
-import { jsonResult } from "./helpers.js";
+import { jsonResult, mapLimit } from "./helpers.js";
 
 const ACCOUNT_DESC =
   "Account alias, email address, or 'all' to fan out across every connected account. Run list_accounts to discover available aliases.";
@@ -54,27 +54,27 @@ export function registerReadTools(server: McpServer): void {
           labelIds: label_ids,
         });
         const ids = list.data.messages ?? [];
-        const detailed = await Promise.all(
-          ids.map(async (m) => {
-            const r = await gmail.users.messages.get({
-              userId: "me",
-              id: m.id!,
-              format: "metadata",
-              metadataHeaders: ["From", "To", "Subject", "Date"],
-            });
-            const parsed = parseMessage(r.data);
-            return {
-              id: parsed.id,
-              threadId: parsed.threadId,
-              labelIds: parsed.labelIds,
-              snippet: parsed.snippet,
-              from: parsed.from,
-              to: parsed.to,
-              subject: parsed.subject,
-              date: parsed.date,
-            };
-          }),
-        );
+        // ponytail: fixed cap, well under Gmail's 250 units/sec; make it configurable
+        // if a bigger quota ever makes this the bottleneck.
+        const detailed = await mapLimit(ids, 8, async (m) => {
+          const r = await gmail.users.messages.get({
+            userId: "me",
+            id: m.id!,
+            format: "metadata",
+            metadataHeaders: ["From", "To", "Subject", "Date"],
+          });
+          const parsed = parseMessage(r.data);
+          return {
+            id: parsed.id,
+            threadId: parsed.threadId,
+            labelIds: parsed.labelIds,
+            snippet: parsed.snippet,
+            from: parsed.from,
+            to: parsed.to,
+            subject: parsed.subject,
+            date: parsed.date,
+          };
+        });
         return { messages: detailed };
       });
       return jsonResult({ accounts });
